@@ -1,6 +1,13 @@
 const express = require("express")
 const cors = require("cors")
-require("dotenv").config()
+const dotenv = require("dotenv")
+const employeeRoutes = require("./routes/emplyoyeeRoutes")
+
+const connetDB = require("./config/db")
+
+dotenv.config()
+
+connetDB()
 
 const app = express()
 
@@ -20,3 +27,5 @@ app.listen(PORT, () => {
     console.log(`Server running on port: ${PORT}`);
 
 })
+
+app.use("/api/emplyoees", employeeRoutes)
