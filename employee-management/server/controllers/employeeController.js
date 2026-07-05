@@ -1,7 +1,27 @@
 const Employee = require("../models/employee")
 
-async function createEmployee(req, res) {
+async function createEmployee(req, res, next) {
     try {
+        const findemoloyeeEmail = await Employee.findOne({
+            email: req.body.email,
+        })
+
+        const findemoloyeeId = await Employee.findOne({
+            employeeId: req.body.employeeId
+        })
+
+        if (findemoloyeeEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Email already created",
+            })
+        } else if (findemoloyeeId) {
+            return res.status(400).json({
+                success: false,
+                message: "EmployeeId already created",
+            })
+        }
+
         const employee = await Employee.create(req.body)
 
         return res.status(201).json({
@@ -10,33 +30,72 @@ async function createEmployee(req, res) {
             employee
         })
     } catch (error) {
-        console.log(error.message);
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        })
+        next(error)
     }
 }
 
-async function getEmployee(req, res) {
+async function getEmployee(req, res, next) {
     try {
-        const employees = await Employee.find()
+        const { search = "", page = "1", limit = "10" } = req.query
+        const Page = Number(page)
+        const Limit = Number(limit)
+
+        const skip = (Page - 1) * Limit
+
+        const filter = {}
+        if (search) {
+            filter.$or = [
+                {
+                    name: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                },
+                {
+                    email: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                },
+                {
+                    employeeId: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                }
+            ]
+        }
+
+        const employees = await Employee.find(filter)
+            .skip(skip)
+            .limit(Limit)
+
+        const totalEmployees = await Employee.countDocuments(filter)
+
+        const totalPages = Math.ceil(totalEmployees / Limit)
+
+        const currentPage = Page
+        const hasNextPage = (totalPages - currentPage) !== 0 ? true : false
+        const hasPreviousPage = skip !== 0 ? true : false
+
 
         return res.status(200).json({
             success: true,
             message: "all employee found",
+            Limit,
+            totalEmployees,
+            totalPages,
+            currentPage,
+            hasNextPage,
+            hasPreviousPage,
             employees
         })
     } catch (error) {
-        console.log(error.message);
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        })
+        next(error)
     }
 }
 
-async function getEmployeebyId(req, res) {
+async function getEmployeebyId(req, res, next) {
     try {
         const employee = await Employee.findById(req.params.id)
         if (!employee) {
@@ -51,15 +110,11 @@ async function getEmployeebyId(req, res) {
             employee
         })
     } catch (error) {
-        console.log(error.message);
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        })
+        next(error)
     }
 }
 
-async function editEmployeebyId(req, res) {
+async function editEmployeebyId(req, res, next) {
     try {
         const updatedemployee = await Employee.findByIdAndUpdate(req.params.id, req.body, {
             new: true
@@ -78,15 +133,11 @@ async function editEmployeebyId(req, res) {
             updatedemployee
         })
     } catch (error) {
-        console.log(error.message);
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        })
+        next(error)
     }
 }
 
-async function deleteEmployeebyId(req, res) {
+async function deleteEmployeebyId(req, res, next) {
     try {
         const employee = await Employee.findByIdAndDelete(req.params.id)
         if (!employee) {
@@ -102,11 +153,7 @@ async function deleteEmployeebyId(req, res) {
             employee
         })
     } catch (error) {
-        console.log(error.message);
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        })
+        next(error)
     }
 }
 

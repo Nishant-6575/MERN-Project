@@ -4,6 +4,7 @@ const dotenv = require("dotenv")
 const employeeRoutes = require("./routes/emplyoyeeRoutes")
 
 const connetDB = require("./config/db")
+const errorHandler = require("./middleware/error.middleware")
 
 dotenv.config()
 
@@ -29,3 +30,5 @@ app.listen(PORT, () => {
 })
 
 app.use("/api/emplyoees", employeeRoutes)
+
+app.use(errorHandler)
