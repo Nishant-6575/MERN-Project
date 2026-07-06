@@ -36,11 +36,11 @@ async function createEmployee(req, res, next) {
 
 async function getEmployee(req, res, next) {
     try {
-        const { search = "", page = "1", limit = "10" } = req.query
-        const Page = Number(page)
-        const Limit = Number(limit)
+        const { search = "", page = "1", limit = "10", sort = "-createdAt", department = "" } = req.query
+        const pageNumber = Number(page)
+        const limitNumber = Number(limit)
 
-        const skip = (Page - 1) * Limit
+        const skip = (pageNumber - 1) * limitNumber
 
         const filter = {}
         if (search) {
@@ -66,26 +66,33 @@ async function getEmployee(req, res, next) {
             ]
         }
 
+        if (department) {
+            filter.department = {
+                $regex: department,
+                $options: "i"
+            }
+        }
+
         const employees = await Employee.find(filter)
+            .sort(sort)
             .skip(skip)
-            .limit(Limit)
+            .limit(limitNumber)
 
         const totalEmployees = await Employee.countDocuments(filter)
 
-        const totalPages = Math.ceil(totalEmployees / Limit)
+        const totalPages = Math.ceil(totalEmployees / limitNumber)
 
-        const currentPage = Page
-        const hasNextPage = (totalPages - currentPage) !== 0 ? true : false
-        const hasPreviousPage = skip !== 0 ? true : false
+        const hasNextPage = pageNumber < totalPages
+        const hasPreviousPage = pageNumber > 1
 
 
         return res.status(200).json({
             success: true,
             message: "all employee found",
-            Limit,
+            limitNumber,
             totalEmployees,
             totalPages,
-            currentPage,
+            pageNumber,
             hasNextPage,
             hasPreviousPage,
             employees
@@ -157,4 +164,42 @@ async function deleteEmployeebyId(req, res, next) {
     }
 }
 
-module.exports = { createEmployee, getEmployee, getEmployeebyId, editEmployeebyId, deleteEmployeebyId }
+async function getEmployeeStats(req, res, next) {
+    try {
+        const totalEmployees = await Employee.countDocuments()
+
+        const totalDepartments = (await Employee.distinct("department")).length
+
+        const employees = await Employee.find()
+
+        const totalSalary = employees.reduce((sum, employee) => {
+            return sum + employee.salary
+        }, 0)
+
+        const averageSalary = Math.round(totalSalary / totalEmployees)
+
+        const highestSalary = await Employee.findOne()
+            .sort("-salary")
+            .select("name salary")
+
+        const lowestSalary = await Employee.findOne()
+            .sort("salary")
+            .select("name salary")
+
+        return res.status(200).json({
+            success: true,
+            stats: {
+                totalEmployees,
+                highestSalary,
+                lowestSalary,
+                totalDepartments,
+                averageSalary
+            }
+        })
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+module.exports = { createEmployee, getEmployee, getEmployeebyId, editEmployeebyId, deleteEmployeebyId, getEmployeeStats }
