@@ -1,4 +1,4 @@
-import type { ApiResponse, CreateEmployeeRequest, DeleteEmployeeResponse, Employee, EmployeeListResponse, EmployeeQueryParams } from "@/types/employee"
+import type { ApiResponse, CreateEmployeeRequest, DashboardStatisticsResponse, DeleteEmployeeResponse, Employee, EmployeeListResponse, EmployeeQueryParams } from "@/types/employee"
 import api from "./axios"
 
 export const getEmployees = async (
@@ -39,3 +39,11 @@ export const updateEmployee = async (
 
     return response.data;
 }
+
+export const getDashboardStatistics = async (): Promise<DashboardStatisticsResponse> => {
+  const response = await api.get<DashboardStatisticsResponse>(
+    "/employees/stats"
+  );
+
+  return response.data;
+};
