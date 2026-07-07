@@ -29,6 +29,6 @@ app.listen(PORT, () => {
 
 })
 
-app.use("/api/emplyoees", employeeRoutes)
+app.use("/api/employees", employeeRoutes)
 
 app.use(errorHandler)
