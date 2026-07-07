@@ -186,7 +186,6 @@ export default function EmployeeList() {
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Department</TableHead>
-            <TableHead>Designation</TableHead>
             <TableHead className="text-right">Salary</TableHead>
             <TableHead className="text-center">Actions</TableHead>
           </TableRow>
@@ -208,10 +207,13 @@ export default function EmployeeList() {
                 <TableCell>{employee.name}</TableCell>
                 <TableCell>{employee.email}</TableCell>
                 <TableCell>{employee.department}</TableCell>
-                <TableCell>{employee.designation}</TableCell>
                 <TableCell className="text-right">₹ {employee.salary.toLocaleString("en-IN")}</TableCell>
                 <TableCell className="text-center">
-                  <Button variant="outline" className="mx-2">Edit</Button>
+                  <Button asChild>
+                    <Link to={`/employees/${employee._id}`}>
+                      Edit
+                    </Link>
+                  </Button>
                   <Button variant="destructive" onClick={() => {
                     setSelectedEmployeeId(employee._id);
                     setOpen(true);

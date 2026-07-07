@@ -5,7 +5,6 @@ export interface Employee {
     employeeId: string,
     department: string,
     salary: number,
-    designation: string
     createdAt: string
     updatedAt: string
 }
@@ -35,11 +34,15 @@ export interface CreateEmployeeRequest {
     email: string;
     employeeId: string;
     department: string | null;
-    designation: string;
     salary: string | number;
 }
 
 export interface DeleteEmployeeResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface ApiResponse {
   success: boolean;
   message: string;
 }
